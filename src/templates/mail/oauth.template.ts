@@ -1,4 +1,4 @@
-interface OAuthLinkEmailParams {
+export interface OAuthLinkEmailParams {
   userName: string;
   provider: "Google" | "GitHub";
   providerEmail?: string;

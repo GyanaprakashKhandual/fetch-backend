@@ -1,4 +1,4 @@
-import app, { connectDB } from "./app";
+import app, { connectDB } from "./app.js";
 import { config } from "dotenv";
 
 // Load environment variables
@@ -80,7 +80,7 @@ const startServer = async (): Promise<void> => {
           console.log("✅ Database connection closed");
 
           // Close email connection
-          const { closeEmailConnection } = await import("./configs/mail.config");
+          const { closeEmailConnection } = await import("./configs/mail.config.js");
           await closeEmailConnection();
 
           console.log("✅ All connections closed successfully");

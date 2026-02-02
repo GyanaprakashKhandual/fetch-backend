@@ -7,7 +7,7 @@ import {
   RepositoryStatus,
   RepositoryVisibility,
   ScanStatus,
-} from "../types/repository.types";
+} from "../types/repository.types.js";
 import {
   repositoryAuthSchema,
   branchSchema,
@@ -18,7 +18,7 @@ import {
   frameworkInfoSchema,
   pullRequestSchema,
   repositoryStatsSchema,
-} from "../schema/repository.sub.schema";
+} from "../schema/repository.sub.schema.js";
 
 const repositorySchema = new Schema<IRepository>(
   {

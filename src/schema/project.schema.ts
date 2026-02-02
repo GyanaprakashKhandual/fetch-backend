@@ -7,14 +7,14 @@ import {
   ISyncStatus,
   ProjectStatus,
   ProjectVisibility,
-} from "../types/project.types";
+} from "../types/project.types.js";
 import {
   aiConfigurationSchema,
   discoveredEndpointSchema,
   analysisResultSchema,
   projectSettingsSchema,
-} from "../schema/project.sub.schema";
-import { Project } from "../models/project.model";
+} from "../schema/project.sub.schema.js";
+import { Project } from "../models/project.model.js";
 
 const projectSchema = new Schema<IProject>(
   {

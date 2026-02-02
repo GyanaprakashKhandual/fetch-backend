@@ -6,7 +6,7 @@ import {
   IProjectSettings,
   EndpointSource,
   AIAnalysisStatus,
-} from "../types/project.types";
+} from "../types/project.types.js";
 
 export const aiConfigurationSchema = new Schema<IAIConfiguration>(
   {

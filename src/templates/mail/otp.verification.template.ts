@@ -1,4 +1,4 @@
-interface OTPEmailParams {
+export interface OTPEmailParams {
   userName: string;
   otpCode: string;
   expiresIn: string; // e.g., "10 minutes"

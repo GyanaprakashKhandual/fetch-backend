@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyAccessToken, extractTokenFromHeader } from "../utils/token.util";
-import { AppError, AuthenticationError } from "../utils/error.util";
-import { User } from "../models/user.model";
+import { verifyAccessToken, extractTokenFromHeader } from "../utils/token.util.js";
+import { AppError, AuthenticationError } from "../utils/error.util.js";
+import { User } from "../models/user.model.js";
 
 /**
  * Extend Express Request to include userId

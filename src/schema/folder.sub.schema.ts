@@ -7,7 +7,7 @@ import {
   IFolderTemplate,
   IFolderVersion,
   SortOrder,
-} from "../types/folder.types";
+} from "../types/folder.types.js";
 
 export const folderPermissionsSchema = new Schema<IFolderPermissions>(
   {

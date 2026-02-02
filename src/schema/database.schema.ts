@@ -6,7 +6,7 @@ import {
   IHealthCheck,
   ISchemaAnalysisResult,
   SchemaAnalysisStatus,
-} from "../types/database.types";
+} from "../types/database.types.js";
 import {
   connectionConfigSchema,
   columnSchema,
@@ -18,7 +18,7 @@ import {
   schemaAnalysisResultSchema,
   databaseStatsSchema,
   healthCheckSchema,
-} from "../schema/database.sub.schema";
+} from "../schema/database.sub.schema.js";
 
 const databaseConnectionSchema = new Schema<IDatabaseConnection>(
   {

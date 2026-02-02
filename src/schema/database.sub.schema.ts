@@ -12,7 +12,7 @@ import {
   IHealthCheck,
   DataType,
   SchemaAnalysisStatus,
-} from "../types/database.types";
+} from "../types/database.types.js";
 
 export const connectionConfigSchema = new Schema<IConnectionConfig>(
   {

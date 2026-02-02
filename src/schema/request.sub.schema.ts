@@ -14,7 +14,7 @@ import {
   AuthenticationType,
   RawBodyFormat,
   BodyType,
-} from "../types/request.types";
+} from "../types/request.types.js";
 
 export const keyValueSchema = new Schema<IKeyValue>(
   {

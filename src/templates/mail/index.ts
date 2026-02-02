@@ -1,14 +1,4 @@
-import { magicLinkTemplate } from './mail.verification.template';
-import { oauthLinkTemplate } from './oauth.template';
-import { otpVerificationTemplate } from './otp.verification.template';
-
-
-export { welcomeEmailTemplate } from "./welcome.template";
-export type { WelcomeEmailParams } from "./welcome.template";
-
-export type { OTPEmailParams } from "./otp.verification.template";
-
-export type { OAuthLinkEmailParams } from "./oauth.template";
-
-
-export type { MagicLinkEmailParams } from "./magic-link.template";
+export { welcomeEmailTemplate, WelcomeEmailParams } from "./welcome.template.js";
+export { otpVerificationTemplate, OTPEmailParams } from "./otp.verification.template.js";
+export { oauthLinkTemplate, OAuthLinkEmailParams } from "./oauth.template.js";
+export { magicLinkTemplate, MagicLinkEmailParams } from "./mail.verification.template.js";

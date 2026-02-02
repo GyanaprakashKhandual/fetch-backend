@@ -12,7 +12,7 @@ import {
   RepositoryProvider,
   FileType,
   ScanStatus,
-} from "../types/repository.types";
+} from "../types/repository.types.js";
 
 export const repositoryAuthSchema = new Schema<IRepositoryAuth>(
   {

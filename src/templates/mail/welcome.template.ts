@@ -1,4 +1,4 @@
-interface WelcomeEmailParams {
+export interface WelcomeEmailParams {
   userName: string;
   verificationLink: string;
   expiresIn: string; // e.g., "24 hours"

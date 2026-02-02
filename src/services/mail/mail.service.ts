@@ -1,16 +1,16 @@
-import { welcomeEmailTemplate } from "./../../templates/mail/welcome.template";
-import { otpVerificationTemplate } from "./../../templates/mail/otp.verification.template";
-import { oauthLinkTemplate } from "./../../templates/mail/oauth.template";
-import { magicLinkTemplate } from "./../../templates/mail/mail.verification.template";
+import { welcomeEmailTemplate } from "./../../templates/mail/welcome.template.js";
+import { otpVerificationTemplate } from "./../../templates/mail/otp.verification.template.js";
+import { oauthLinkTemplate } from "./../../templates/mail/oauth.template.js";
+import { magicLinkTemplate } from "./../../templates/mail/mail.verification.template.js";
 import {
   getTransporter,
   getDefaultFromAddress,
-} from "../../configs/mail.config";
-import { AppError } from "../../utils/error.util";
-import { WelcomeEmailParams } from "../../templates/mail";
-import { OTPEmailParams } from "../../templates/mail";
-import { OAuthLinkEmailParams } from "../../templates/mail";
-import { MagicLinkEmailParams } from "../../templates/mail";
+} from "../../configs/mail.config.js";
+import { AppError } from "../../utils/error.util.js";
+import { WelcomeEmailParams } from "../../templates/mail/index.js";
+import { OTPEmailParams } from "../../templates/mail/index.js";
+import { OAuthLinkEmailParams } from "../../templates/mail/index.js";
+import { MagicLinkEmailParams } from "../../templates/mail/index.js";
 
 /**
  * Email Service for sending various types of emails

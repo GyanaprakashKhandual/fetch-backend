@@ -4,7 +4,7 @@ import {
   FolderType,
   IAISuggestion,
   IFolder,
-} from "../types/folder.types";
+} from "../types/folder.types.js";
 import {
   folderPermissionsSchema,
   folderSettingsSchema,
@@ -12,8 +12,8 @@ import {
   aiSuggestionSchema,
   folderTemplateSchema,
   folderVersionSchema,
-} from "../schema/folder.sub.schema";
-import { Folder } from "../models/folder.model";
+} from "../schema/folder.sub.schema.js";
+import { Folder } from "../models/folder.model.js";
 
 const folderSchema = new Schema<IFolder>(
   {

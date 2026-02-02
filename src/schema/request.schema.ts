@@ -5,7 +5,7 @@ import {
   HttpMethod,
   IRequest,
   RequestStatus,
-} from "../types/request.types";
+} from "../types/request.types.js";
 import {
   keyValueSchema,
   pathVariableSchema,
@@ -18,7 +18,7 @@ import {
   responseSnapshotSchema,
   versionSchema,
   documentationSchema,
-} from "../schema/request.sub.schema";
+} from "../schema/request.sub.schema.js";
 
 const requestSchema = new Schema<IRequest>(
   {

@@ -1,4 +1,4 @@
-import { ValidationError, AppError } from "./../utils/error.util";
+import { ValidationError, AppError } from "./../utils/error.util.js";
 import { Request, Response, NextFunction } from "express";
 
 /**

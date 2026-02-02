@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthService } from "../services/authentication/authentication.service";
-import { EmailService } from "../services/mail/mail.service";
-import { generateOTP } from "../utils/crypto.util";
-import { AppError } from "../utils/error.util";
+import { AuthService } from "../services/authentication/authentication.service.js";
+import { EmailService } from "../services/mail/mail.service.js";
+import { generateOTP } from "../utils/crypto.util.js";
+import { AppError } from "../utils/error.util.js";
 
 /**
  * Authentication Controller

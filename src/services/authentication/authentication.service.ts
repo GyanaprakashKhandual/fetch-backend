@@ -1,14 +1,14 @@
-import { IUser } from "./../../types/user.types";
-import { User } from "../../models/user.model";
+import { IUser } from "./../../types/user.types.js";
+import { User } from "../../models/user.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { generateOTP, hashOTP } from "../../utils/crypto.util";
+import { generateOTP, hashOTP } from "../../utils/crypto.util.js";
 import {
   generateAccessToken,
   generateRefreshToken,
   generateEmailVerificationToken,
-} from "../../utils/token.util";
-import { AppError } from "../../utils/error.util";
+} from "../../utils/token.util.js";
+import { AppError } from "../../utils/error.util.js";
 
 interface RegisterData {
   userName: string;

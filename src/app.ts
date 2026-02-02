@@ -6,17 +6,17 @@ import helmet from "helmet";
 import { config } from "dotenv";
 
 // Import routes
-import authRoutes from "./routes/user.route";
+import authRoutes from "./routes/user.route.js";
 
 // Import middleware
 import {
   errorHandler,
   notFoundHandler,
-} from "./handler/error.handler";
-import { apiLimiter } from "./middlewares/rate.limit.middleware";
+} from "./handler/error.handler.js";
+import { apiLimiter } from "./middlewares/rate.limit.middleware.js";
 
 // Import config
-import { verifyEmailConnection } from "./configs/mail.config";
+import { verifyEmailConnection } from "./configs/mail.config.js";
 
 // Load environment variables
 config();
@@ -134,7 +134,7 @@ export const connectDB = async (): Promise<void> => {
     await mongoose.connect(mongoURI, options);
 
     console.log("✅ MongoDB connected successfully");
-    console.log(`📊 Database: ${mongoose.connection.db.databaseName}`);
+    console.log(`📊 Database: ${mongoose.connection.db?.databaseName || "Unknown"}`);
     console.log(`🔗 Host: ${mongoose.connection.host}`);
 
     // Verify email service connection
