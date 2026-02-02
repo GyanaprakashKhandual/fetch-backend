@@ -1,26 +1,11 @@
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 
 export interface ISubscription extends Document {
-  // Either user OR team must be set (enforced in schema)
-  user?: Types.ObjectId;
-  team?: Types.ObjectId;
-
-  plan: "free" | "starter" | "professional" | "enterprise";
-  status:
-    | "active"
-    | "inactive"
-    | "cancelled"
-    | "expired"
-    | "trial"
-    | "past_due";
-  stripeCustomerId?: string;
-  stripeSubscriptionId?: string;
+  plan: "free" | "pro" | "enterprise";
+  status: "active" | "inactive" | "cancelled" | "expired";
   currentPeriodStart?: Date;
   currentPeriodEnd?: Date;
-  trialStart?: Date;
-  trialEnd?: Date;
-  cancelAt?: Date;
-  cancelledAt?: Date;
+  isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
