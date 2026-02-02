@@ -37,34 +37,49 @@ export class AuthService {
     otpExpiresIn: string;
   }> {
     const { userName, userEmail, userPassword } = data;
+    console.log('🔵 [SERVICE-REGISTER] Starting registration:', { userName, userEmail });
 
     // Normalize email
     const normalizedEmail = userEmail.toLowerCase().trim();
+    console.log('🔵 [SERVICE-REGISTER] Normalized email:', normalizedEmail);
 
     // Check if user already exists
     const existingUser = await User.findOne({ userEmail: normalizedEmail });
+    console.log('🔵 [SERVICE-REGISTER] Existing user check:', {
+      exists: !!existingUser,
+      verified: existingUser?.emailVerified,
+    });
 
     if (existingUser && existingUser.emailVerified) {
+      console.error('❌ [SERVICE-REGISTER] User already exists and verified');
       throw new AppError("User with this email already exists", 409);
     }
 
     // If user exists but not verified, delete the old record
     if (existingUser && !existingUser.emailVerified) {
+      console.log('🔵 [SERVICE-REGISTER] Deleting old unverified user');
       await User.deleteOne({ _id: existingUser._id });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(userPassword, 12);
+    console.log('🔵 [SERVICE-REGISTER] Password hashed');
 
     // Generate OTP (6-digit)
     const { otp, hashedOTP } = generateOTP();
+    console.log('🔵 [SERVICE-REGISTER] OTP generated in service:', {
+      plainOTP: otp,
+      hashedOTP,
+    });
 
     // Set OTP expiration (10 minutes)
     const otpExpiration = new Date(Date.now() + 10 * 60 * 1000);
+    console.log('🔵 [SERVICE-REGISTER] OTP expiration set:', otpExpiration);
 
     // Create default subscription (you'll need to create this)
     // For now, we'll assume a default subscription exists or create one
     const defaultSubscription = await this.getOrCreateDefaultSubscription();
+    console.log('🔵 [SERVICE-REGISTER] Default subscription:', defaultSubscription._id);
 
     // Create new user (unverified)
     const newUser = await User.create({
@@ -82,6 +97,13 @@ export class AuthService {
       mfaEnabled: false,
       backupCodes: [],
       isSuspended: false,
+    });
+
+    console.log('🔵 [SERVICE-REGISTER] User created successfully:', {
+      userId: newUser._id,
+      email: newUser.userEmail,
+      hasToken: !!newUser.emailVerificationToken,
+      tokenExpiry: newUser.emailVerificationExpires,
     });
 
     return {
@@ -103,15 +125,35 @@ export class AuthService {
     message: string;
   }> {
     const { email, otp } = data;
+    console.log('🟢 [SERVICE-VERIFY] Starting verification:', { email, otp });
 
-    // Find user
-    const user = await User.findOne({
-      userEmail: email.toLowerCase().trim(),
-      emailVerified: false,
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
+    console.log('🟢 [SERVICE-VERIFY] Normalized email:', normalizedEmail);
+
+    // Find user by email (regardless of verification status for debugging)
+    let user = await User.findOne({
+      userEmail: normalizedEmail,
     }).select("+emailVerificationToken +emailVerificationExpires");
 
+    console.log('🟢 [SERVICE-VERIFY] User lookup result:', {
+      found: !!user,
+      email: user?.userEmail,
+      hasToken: !!user?.emailVerificationToken,
+      tokenExpiry: user?.emailVerificationExpires,
+      isVerified: user?.emailVerified,
+      isActive: user?.isActive,
+    });
+
     if (!user) {
-      throw new AppError("Invalid or expired verification request", 400);
+      console.error('❌ [SERVICE-VERIFY] User not found for email:', normalizedEmail);
+      throw new AppError(`User with email ${normalizedEmail} not found. Please register first.`, 400);
+    }
+
+    // Check if already verified
+    if (user.emailVerified) {
+      console.error('❌ [SERVICE-VERIFY] Email already verified');
+      throw new AppError("Email is already verified. Please login instead.", 400);
     }
 
     // Check if OTP is expired
@@ -119,8 +161,17 @@ export class AuthService {
       !user.emailVerificationExpires ||
       user.emailVerificationExpires < new Date()
     ) {
+      console.error('❌ [SERVICE-VERIFY] OTP expired:', {
+        expiry: user.emailVerificationExpires,
+        now: new Date(),
+      });
       throw new AppError("OTP has expired. Please request a new one.", 400);
     }
+
+    console.log('🟢 [SERVICE-VERIFY] Comparing OTP:', {
+      providedOTP: otp,
+      hashedToken: user.emailVerificationToken,
+    });
 
     // Verify OTP
     const isOTPValid = await bcrypt.compare(
@@ -128,7 +179,10 @@ export class AuthService {
       user.emailVerificationToken || "",
     );
 
+    console.log('🟢 [SERVICE-VERIFY] OTP validation result:', isOTPValid);
+
     if (!isOTPValid) {
+      console.error('❌ [SERVICE-VERIFY] Invalid OTP');
       throw new AppError("Invalid OTP. Please try again.", 400);
     }
 
@@ -141,10 +195,12 @@ export class AuthService {
     user.lastActiveAt = new Date();
 
     await user.save();
+    console.log('🟢 [SERVICE-VERIFY] User updated and verified successfully');
 
     // Generate tokens for persistent login
     const accessToken = generateAccessToken(user._id.toString());
     const refreshToken = generateRefreshToken(user._id.toString());
+    console.log('🟢 [SERVICE-VERIFY] Tokens generated');
 
     // Get public profile
     const publicProfile = user.toObject ? user.toObject() : user;
@@ -165,6 +221,7 @@ export class AuthService {
     otpExpiresIn: string;
   }> {
     const normalizedEmail = email.toLowerCase().trim();
+    console.log('🟡 [SERVICE-RESEND] Starting resend for:', normalizedEmail);
 
     // Find unverified user
     const user = await User.findOne({
@@ -172,7 +229,14 @@ export class AuthService {
       emailVerified: false,
     }).select("+emailVerificationExpires");
 
+    console.log('🟡 [SERVICE-RESEND] User lookup result:', {
+      found: !!user,
+      email: user?.userEmail,
+      hasExpiry: !!user?.emailVerificationExpires,
+    });
+
     if (!user) {
+      console.error('❌ [SERVICE-RESEND] No pending verification found');
       throw new AppError("No pending verification found for this email", 404);
     }
 
@@ -186,6 +250,7 @@ export class AuthService {
         const remainingTime = Math.ceil(
           (cooldownPeriod - timeSinceLastOTP) / 1000,
         );
+        console.error('❌ [SERVICE-RESEND] Rate limit hit:', remainingTime, 'seconds remaining');
         throw new AppError(
           `Please wait ${remainingTime} seconds before requesting a new OTP`,
           429,
@@ -196,11 +261,17 @@ export class AuthService {
     // Generate new OTP
     const { otp, hashedOTP } = generateOTP();
     const otpExpiration = new Date(Date.now() + 10 * 60 * 1000);
+    console.log('🟡 [SERVICE-RESEND] New OTP generated:', {
+      plainOTP: otp,
+      hashedOTP,
+      expiry: otpExpiration,
+    });
 
     // Update user
     user.emailVerificationToken = hashedOTP;
     user.emailVerificationExpires = otpExpiration;
     await user.save();
+    console.log('🟡 [SERVICE-RESEND] User updated with new OTP');
 
     return {
       message: "New OTP sent to your email",
@@ -325,7 +396,7 @@ export class AuthService {
    */
   private static async getOrCreateDefaultSubscription() {
     // Import Subscription model
-    const { Subscription } = await import("../../models/subscription.model");
+    const { Subscription } = await import("../../models/subscription.model.js");
 
     // Check if default free subscription exists
     let defaultSubscription = await Subscription.findOne({

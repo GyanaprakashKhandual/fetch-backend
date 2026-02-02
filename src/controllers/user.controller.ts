@@ -21,16 +21,51 @@ export class AuthController {
   ): Promise<void> {
     try {
       const { userName, userEmail, userPassword } = req.body;
+      console.log('🔵 [REGISTER] Starting registration for:', userEmail);
 
-      // Register user (creates unverified user)
+      // Register user (creates unverified user with OTP already saved)
       const result = await AuthService.registerUser({
         userName,
         userEmail,
         userPassword,
       });
+      console.log('🔵 [REGISTER] User registered successfully:', result);
 
-      // Generate OTP for email verification
-      const { otp } = generateOTP();
+      // The service already generated and saved the OTP
+      // We need to get it from the database to send via email
+      const { User } = await import("../models/user.model.js");
+      const user = await User.findOne({ userEmail: userEmail.toLowerCase() })
+        .select("+emailVerificationToken +emailVerificationExpires");
+
+      if (!user) {
+        console.error('❌ [REGISTER] User not found after registration');
+        throw new AppError("Registration failed", 500);
+      }
+
+      console.log('🔵 [REGISTER] User found with token:', {
+        hasToken: !!user.emailVerificationToken,
+        tokenExpiry: user.emailVerificationExpires,
+      });
+
+      // Generate a NEW OTP for email (since the service hashed the original)
+      // This is the issue - we need to send the plain OTP via email
+      // But the service already hashed it. We need to fix this flow.
+      const { otp, hashedOTP, otpExpiry } = generateOTP();
+      
+      // Update with the new OTP (so we know what we're sending)
+      await User.findOneAndUpdate(
+        { userEmail: userEmail.toLowerCase() },
+        {
+          emailVerificationToken: hashedOTP,
+          emailVerificationExpires: otpExpiry,
+        }
+      );
+
+      console.log('🔵 [REGISTER] New OTP generated and saved:', {
+        otp,
+        hashedOTP,
+        otpExpiry,
+      });
 
       // Send OTP via email
       await EmailService.sendOTPEmail(
@@ -44,6 +79,7 @@ export class AuthController {
         },
         userEmail,
       );
+      console.log('🔵 [REGISTER] OTP email sent successfully');
 
       res.status(201).json({
         success: true,
@@ -54,6 +90,7 @@ export class AuthController {
         },
       });
     } catch (error) {
+      console.error('❌ [REGISTER] Error:', error);
       next(error);
     }
   }
@@ -70,9 +107,30 @@ export class AuthController {
   ): Promise<void> {
     try {
       const { email, otp } = req.body;
+      console.log('🟢 [VERIFY] Starting email verification:', {
+        email,
+        otp,
+      });
+
+      // Check if user exists first
+      const { User } = await import("../models/user.model");
+      const user = await User.findOne({ userEmail: email.toLowerCase() });
+      console.log('🟢 [VERIFY] User found in database:', {
+        exists: !!user,
+        email: user?.userEmail,
+        emailVerificationToken: user?.emailVerificationToken,
+        emailVerificationExpires: user?.emailVerificationExpires,
+        emailVerified: user?.emailVerified,
+      });
+
+      if (!user) {
+        console.error('❌ [VERIFY] User not found in database for email:', email);
+        throw new AppError("Email not found. Please register again.", 404);
+      }
 
       // Verify OTP and activate user
       const result = await AuthService.verifyEmailOTP({ email, otp });
+      console.log('🟢 [VERIFY] OTP verified successfully:', result);
 
       // Set HTTP-only cookies for persistent login
       const cookieOptions = {
@@ -89,6 +147,8 @@ export class AuthController {
 
       res.cookie("refreshToken", result.refreshToken, cookieOptions);
 
+      console.log('🟢 [VERIFY] Verification complete, tokens set');
+
       res.status(200).json({
         success: true,
         message: result.message,
@@ -99,6 +159,7 @@ export class AuthController {
         },
       });
     } catch (error) {
+      console.error('❌ [VERIFY] Error:', error);
       next(error);
     }
   }
@@ -115,20 +176,44 @@ export class AuthController {
   ): Promise<void> {
     try {
       const { email } = req.body;
+      console.log('🟡 [RESEND-OTP] Starting OTP resend for:', email);
 
       // Resend OTP
       const result = await AuthService.resendVerificationOTP(email);
+      console.log('🟡 [RESEND-OTP] Service result:', result);
 
       // Generate new OTP
-      const { otp } = generateOTP();
+      const { otp, hashedOTP, otpExpiry } = generateOTP();
+      console.log('🟡 [RESEND-OTP] New OTP generated:', {
+        otp,
+        hashedOTP,
+        otpExpiry,
+      });
 
       // Get user details for email
       const { User } = await import("../models/user.model");
       const user = await User.findOne({ userEmail: email.toLowerCase() });
 
       if (!user) {
+        console.error('❌ [RESEND-OTP] User not found:', email);
         throw new AppError("User not found", 404);
       }
+      console.log('🟡 [RESEND-OTP] User found:', user.userEmail);
+
+      // Save new OTP to database
+      const updateResult = await User.findOneAndUpdate(
+        { userEmail: email.toLowerCase() },
+        {
+          emailVerificationToken: hashedOTP,
+          emailVerificationExpires: otpExpiry,
+        },
+        { new: true }
+      );
+      console.log('🟡 [RESEND-OTP] OTP updated in database:', {
+        email: updateResult?.userEmail,
+        hasToken: !!updateResult?.emailVerificationToken,
+        expiresAt: updateResult?.emailVerificationExpires,
+      });
 
       // Send new OTP via email
       await EmailService.sendOTPEmail(
@@ -142,6 +227,7 @@ export class AuthController {
         },
         email,
       );
+      console.log('🟡 [RESEND-OTP] OTP email sent successfully');
 
       res.status(200).json({
         success: true,
@@ -151,6 +237,7 @@ export class AuthController {
         },
       });
     } catch (error) {
+      console.error('❌ [RESEND-OTP] Error:', error);
       next(error);
     }
   }
